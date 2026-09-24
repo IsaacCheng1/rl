@@ -64,9 +64,14 @@ class PGAgent(nn.Module):
         # step 1: calculate Q values of each (s_t, a_t) point, using rewards (r_0, ..., r_t, ..., r_T)
         q_values: Sequence[np.ndarray] = self._calculate_q_vals(rewards)
 
-        # TODO: flatten the lists of arrays into single arrays, so that the rest of the code can be written in a vectorized
+        # flatten the lists of arrays into single arrays, so that the rest of the code can be written in a vectorized
         # way. obs, actions, rewards, terminals, and q_values should all be arrays with a leading dimension of `batch_size`
         # beyond this point.
+        obs = np.concatenate(obs)
+        actions = np.concatenate(actions)
+        rewards = np.concatenate(rewards)
+        terminals = np.concatenate(terminals)
+        q_values = np.concatenate(q_values)
 
         # step 2: calculate advantages from Q values
         advantages: np.ndarray = self._estimate_advantage(
@@ -146,8 +151,8 @@ class PGAgent(nn.Module):
         Operates on flat 1D NumPy arrays.
         """
         if self.critic is None:
-            # TODO: if no baseline, then what are the advantages?
-            advantages = None
+            # if no baseline, then what are the advantages?
+            advantages = q_values
         else:
             # TODO: run the critic and use it as a baseline
             values = None
@@ -173,8 +178,8 @@ class PGAgent(nn.Module):
                 # remove dummy advantage
                 advantages = advantages[:-1]
 
-        # TODO: normalize the advantages to have a mean of zero and a standard deviation of one within the batch
+        # normalize the advantages to have a mean of zero and a standard deviation of one within the batch
         if self.normalize_advantages:
-            pass
+            advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
 
         return advantages

@@ -59,10 +59,14 @@ class MLPPolicy(nn.Module):
     @torch.no_grad()
     def get_action(self, obs: np.ndarray) -> np.ndarray:
         """Takes a single observation (as a numpy array) and returns a single action (as a numpy array)."""
-        # TODO: implement get_action
-        action = None
+        # implement get_action
+        obs_tensor = ptu.from_numpy(obs)
 
-        return action
+        action_distribution = self.forward(obs_tensor)
+
+        action = action_distribution.sample()
+    
+        return ptu.to_numpy(action)
 
     def forward(self, obs: torch.FloatTensor):
         """
@@ -71,11 +75,14 @@ class MLPPolicy(nn.Module):
         flexible objects, such as a `torch.distributions.Distribution` object. It's up to you!
         """
         if self.discrete:
-            # TODO: define the forward pass for a policy with a discrete action space.
-            pass
+            # define the forward pass for a policy with a discrete action space.
+            logits = self.logits_net(obs)
+            return D.Categorical(logits=logits)
         else:
-            # TODO: define the forward pass for a policy with a continuous action space.
-            pass
+            # define the forward pass for a policy with a continuous action space.
+            mean = self.mean_net(obs)
+            std = self.logstd.exp()
+            return D.Independent(D.Normal(mean, std), 1)
 
     def update(self, obs: np.ndarray, actions: np.ndarray, *args, **kwargs) -> dict:
         """
