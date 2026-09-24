@@ -106,11 +106,15 @@ class MLPPolicyPG(MLPPolicy):
         actions = ptu.from_numpy(actions)
         advantages = ptu.from_numpy(advantages)
 
-        # TODO: compute the policy gradient actor loss
-        loss = None
+        # compute the policy gradient actor loss        
+        action_distribution = self(obs)
+        log_probs = action_distribution.log_prob(actions)
+        loss = - (log_probs * advantages).mean()
 
-        # TODO: perform an optimizer step
-        pass
+        # perform an optimizer step
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
 
         return {
             "Actor Loss": loss.item(),
