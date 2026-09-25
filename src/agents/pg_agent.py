@@ -168,7 +168,7 @@ class PGAgent(nn.Module):
                 # if using a baseline, but not GAE, what are the advantages?
                 advantages = q_values - values 
             else:
-                # TODO: implement GAE
+                # implement GAE
                 batch_size = obs.shape[0]
 
                 # HINT: append a dummy T+1 value for simpler recursive calculation
@@ -176,10 +176,12 @@ class PGAgent(nn.Module):
                 advantages = np.zeros(batch_size + 1)
 
                 for i in reversed(range(batch_size)):
-                    # TODO: recursively compute advantage estimates starting from timestep T.
+                    # recursively compute advantage estimates starting from timestep T.
                     # HINT: use terminals to handle edge cases. terminals[i] is 1 if the state is the last in its
                     # trajectory, and 0 otherwise.
-                    pass
+                    nonterminal = 1 - terminals[i]
+                    delta = rewards[i] + self.gamma * nonterminal * values[i + 1] - values[i]
+                    advantages[i] = self.gamma * self.gae_lambda * nonterminal * advantages[i + 1] + delta
 
                 # remove dummy advantage
                 advantages = advantages[:-1]
