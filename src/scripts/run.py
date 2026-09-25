@@ -23,7 +23,7 @@ def run_training_loop(logger, args):
     ptu.init_gpu(use_gpu=not args.no_gpu, gpu_id=args.which_gpu)
 
     # make the gym environment
-    env = gym.make(args.env_name, render_mode="human")
+    env = gym.make(args.env_name, render_mode=None)
     discrete = isinstance(env.action_space, gym.spaces.Discrete)
 
     max_ep_len = args.ep_len or env.spec.max_episode_steps
