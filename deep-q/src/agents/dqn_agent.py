@@ -72,9 +72,12 @@ class DQNAgent(nn.Module):
             next_qa_values = self.target_critic(next_obs)
 
             if self.use_double_q:
-                # TODO(Section 2.5): implement double-Q target action selection
-                next_action = None
+                # implement double-Q target action selection
+                next_qa_values_critic = self.critic(next_obs)
+                # select action based on the critic's Q network, instead of target's Q network
+                next_action = torch.argmax(next_qa_values_critic, dim=1)
             else:
+                next_qa_values = self.target_critic(next_obs)
                 next_action = torch.argmax(next_qa_values, dim=1)
 
             next_q_values = next_qa_values.gather(
